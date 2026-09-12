@@ -10,6 +10,8 @@ function GroupDetail() {
   const [group, setGroup] = useState(null);
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
+  const [memberEmail, setMemberEmail] = useState('');
+  const [addMemberError, setAddMemberError] = useState('');
 
   useEffect(() => {
     loadData();
@@ -38,6 +40,20 @@ function GroupDetail() {
     navigate('/groups');
   }
 
+  async function handleAddMember(e) {
+  e.preventDefault();
+  setAddMemberError('');
+  try {
+    const res = await api.get(`/auth/find?email=${encodeURIComponent(memberEmail)}`);
+    const userId = res.data._id;
+    await api.put(`/groups/${groupId}/add-members`, { memberIds: [userId] });
+    setMemberEmail('');
+    loadData();
+  } catch (err) {
+    setAddMemberError(err.response?.data?.error || 'Could not add member');
+    }
+  }
+
   async function handleAddExpense(e) {
     e.preventDefault();
     const splitAmong = group.members.map((m) => m._id);
@@ -52,6 +68,16 @@ function GroupDetail() {
       <h2>{group?.name}</h2>
       <button onClick={handleRename}>Rename</button>
       <button onClick={handleDelete}>Delete Group</button>
+      <form onSubmit={handleAddMember}>
+        <input
+          type="email"
+          placeholder="Add member by email"
+          value={memberEmail}
+          onChange={(e) => setMemberEmail(e.target.value)}
+        />
+        <button type="submit">Add Member</button>
+      </form>
+      {addMemberError && <p style={{ color: 'red' }}>{addMemberError}</p>}
 
       <h2>Group Expenses</h2>
             <ul>

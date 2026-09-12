@@ -39,4 +39,15 @@ router.get('/me', protect, async (req, res) => {
   res.json(user);
 });
 
+router.get('/find', protect, async (req, res) => {
+  try {
+    const { email } = req.query;
+    const user = await User.findOne({ email }).select('_id name email');
+    if (!user) return res.status(404).json({ error: 'No user found with that email' });
+    res.json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router;
