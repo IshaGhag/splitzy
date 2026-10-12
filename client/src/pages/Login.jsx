@@ -13,6 +13,7 @@ function Login() {
     try {
       const res = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify({ id: res.data.id, name: res.data.name, email: res.data.email }));
       navigate('/groups');
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');

@@ -53,4 +53,17 @@ router.get('/:expenseId/comments', protect, async (req, res) => {
   res.json(comments);
 });
 
+router.delete('/comments/:commentId', protect, async (req, res) => {
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) return res.status(404).json({ error: 'Comment not found' });
+    if (comment.user.toString() !== req.userId) {
+      return res.status(403).json({ error: 'You can only delete your own comments' });
+    }
+    await comment.deleteOne();
+    res.json({ message: 'Comment deleted' });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
 module.exports = router;

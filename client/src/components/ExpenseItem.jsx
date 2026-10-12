@@ -2,6 +2,7 @@ import { useState } from 'react';
 import api from '../api';
 
 function ExpenseItem({ expense }) {
+  const myId = JSON.parse(localStorage.getItem('user'))?.id;
   const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState(false);
   const [text, setText] = useState('');
@@ -22,6 +23,11 @@ function ExpenseItem({ expense }) {
     loadComments();
   }
 
+  async function handleDeleteComment(commentId) {
+  await api.delete(`/expenses/comments/${commentId}`);
+  loadComments();
+  }
+
   return (
     <li className="card">
       <div>{expense.description} — ₹{expense.amount} (paid by {expense.paidBy.name})</div>
@@ -32,7 +38,14 @@ function ExpenseItem({ expense }) {
       {showComments && (
         <div style={{ marginTop: 10 }}>
           {comments.map((c) => (
-            <p key={c._id}><strong>{c.user.name}:</strong> {c.text}</p>
+            <p key={c._id}>
+              <strong>{c.user.name}:</strong> {c.text}
+              {c.user._id === myId && (
+                <button onClick={() => handleDeleteComment(c._id)} style={{ marginLeft: 8, padding: '2px 8px', fontSize: 12 }}>
+                  Delete
+                </button>
+              )}
+            </p>
           ))}
           <form onSubmit={handleAddComment}>
             <input
